@@ -10,7 +10,7 @@ def main():
         license = 'copyright reserved',
         maintainer = 'Steven Shen',
         maintainer_email = 'steven.shen@waveface.com',
-        install_requires = [],
+        install_requires = ['lxml', 'opengraph', 'readable'],
         zip_safe = False,
         url = "https://waveface.com"
     )

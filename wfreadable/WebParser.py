@@ -93,11 +93,11 @@ class WebParser(object):
             if name == 'keywords':
                 result['keywords'] = t.get('content')
 
-        imgs = tree.xpath("//img | //IMG")
-        for img in imgs:
-            src = img.get('src')
-            if src is not None:
-                result['images'].append({'url': self.fix_relative_url(result['url'], src) })
+#        imgs = tree.xpath("//img | //IMG")
+#        for img in imgs:
+#            src = img.get('src')
+#            if src is not None:
+#                result['images'].append({'url': self.fix_relative_url(result['url'], src) })
 
         links = tree.xpath("//link | //LINK")
         for l in links:

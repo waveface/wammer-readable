@@ -7,15 +7,22 @@ from urllib import URLopener
 from urllib import FancyURLopener
 from WebParser import *
 
+class PageFetchError(Exception):
+    pass
+
+class WebParseError(Exception):
+    pass
+
+class WebSummarizeError(Exception):
+    pass
+    
+
 class WFReadable(object):
     def __init__(self, url, html=None):
         if (re.match("http(s)?://.+", url)) is None:
             url = "http://{0}".format(url)
 
-        if not html:
-            self.html = self.fetch_page(url)
-        else:
-            self.html = html
+        self.html = html
         self.url = url
 
     def fetch_page(self, url):
@@ -37,7 +44,7 @@ class WFReadable(object):
         else:
             return ''
 
-    def summarize(self, text, wordno):
+    def _summarize(self, text, wordno):
         try:
             utext = unicode(text, 'utf-8')
         except TypeError:
@@ -66,21 +73,66 @@ class WFReadable(object):
                 break
         return " ".join(final) + "..."
 
-    def parse(self):
-        wp = WebParser(self.html, self.url)
-        result = wp.parse()
+    def summarize_content(self):
+        if self.html is None:
+            try:
+                self.html = self.fetch_page(self.url)
+            except IOError:
+                raise PageFetchError
 
-        site = SiteParser.Sites(self.url)
-        text = None
-        if site.is_match():
-            soul = site.parse(self.html)
-            soul = re.sub(r'\s+', ' ', soul)
-            result['text'] = soul
+        try:
+            result = {}
+            site = SiteParser.Sites(self.url)
+            text = None
+            if site.is_match():
+                soul = site.parse(self.html)
+                soul = re.sub(r'\s+', ' ', soul)
+                result['text'] = soul
 
-            soul_tree = lxml.html.fromstring(soul)
-            soul_text_only = soul_tree.text_content()
-            s = self.summarize(soul_text_only, 50)
-            if 'description' not in result:
+                soul_tree = lxml.html.fromstring(soul)
+                soul_text_only = soul_tree.text_content()
+                s = self._summarize(soul_text_only, 50)
                 result['description'] = s
+
+                return result
+            return None
+        except:
+            raise WebSummarizeError
+ 
+
+    def parse(self):
+        if self.html is None:
+            try:
+                self.html = self.fetch_page(self.url)
+            except IOError:
+                raise PageFetchError
+
+        result = {}
+        try:
+            wp = WebParser(self.html, self.url)
+            result = wp.parse()
+        except:
+            raise WebParseError
+            pass
+
+        t = self.summarize_content()
+        if t is not None:
+            result['text'] = t['text']
+            if 'description' not in result:
+                result['description'] = t['description']
+            elif len(t['description']) > 30:
+                result['description'] = t['description']
+
+            # fix the images array
+            tree = lxml.html.fromstring(t['text'])
+            images = []
+            imgs = tree.xpath('//img | //IMG')
+            for img in imgs:
+                src = img.get('src')
+                if src is not None:
+                    images.append({'url': src})
+
+            result['images'] = result['images'] + images
+
         return result
 
