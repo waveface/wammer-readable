@@ -23,7 +23,13 @@ class WFReadable(object):
             url = "http://{0}".format(url)
 
         self.html = html
+        self.dom_tree = None
         self.url = url
+
+    def merge_url_array(self, array1, array2):
+        resulting_list = list(array1)
+        resulting_list.extend (x for x in array2 if x not in resulting_list)
+        return resulting_list
 
     def fetch_page(self, url):
         class MyOpener(FancyURLopener):
@@ -44,7 +50,7 @@ class WFReadable(object):
         else:
             return ''
 
-    def _summarize(self, text, wordno):
+    def summarize(self, text, wordno):
         try:
             utext = unicode(text, 'utf-8')
         except TypeError:
@@ -73,31 +79,36 @@ class WFReadable(object):
                 break
         return " ".join(final) + "..."
 
-    def summarize_content(self):
+    def extract_content(self):
         if self.html is None:
             try:
                 self.html = self.fetch_page(self.url)
             except IOError:
                 raise PageFetchError
 
+        if self.dom_tree is None:
+            wp = WebParser(self.html, self.url)
+            (self.dom_tree, self.html) = wp.normalize()
+
         try:
             result = {}
             site = SiteParser.Sites(self.url)
             text = None
             if site.is_match():
-                soul = site.parse(self.html)
-                soul = re.sub(r'\s+', ' ', soul)
-                result['text'] = soul
+                result = site.parse(self.html, self.dom_tree)
+                if 'text' in result:
+                    result['text'] = re.sub(r'\s+', ' ', result['text'])
 
-                soul_tree = lxml.html.fromstring(soul)
+                soul_tree = lxml.html.fromstring(result['text'])
                 soul_text_only = soul_tree.text_content()
-                s = self._summarize(soul_text_only, 50)
+                s = self.summarize(soul_text_only, 50)
                 result['description'] = s
 
                 return result
             return None
         except:
-            raise WebSummarizeError
+            #raise WebSummarizeError
+            raise
  
 
     def parse(self):
@@ -110,12 +121,12 @@ class WFReadable(object):
         result = {}
         try:
             wp = WebParser(self.html, self.url)
-            result = wp.parse()
+            (self.dom_tree, self.html) = wp.normalize()
+            result = wp.extract()
         except:
-            raise WebParseError
-            pass
+            raise
 
-        t = self.summarize_content()
+        t = self.extract_content()
         if t is not None:
             result['text'] = t['text']
             if 'description' not in result:
@@ -123,16 +134,8 @@ class WFReadable(object):
             elif len(t['description']) > 30:
                 result['description'] = t['description']
 
-            # fix the images array
-            tree = lxml.html.fromstring(t['text'])
-            images = []
-            imgs = tree.xpath('//img | //IMG')
-            for img in imgs:
-                src = img.get('src')
-                if src is not None:
-                    images.append({'url': src})
-
-            result['images'] = result['images'] + images
+            if 'images' in t:
+                result['images'] = self.merge_url_array(result['images'], t['images'])
 
         return result
 

@@ -5,7 +5,8 @@ class Vimeo(object):
     def __init__(self, verbose=False):
         self.verbose = verbose
 
-    def run(self, html, url=None):
+    def run(self, html, dom_tree, url=None):
+        result = {}
         rb = Readable()
         tree = rb.grab_article(html)
         desc = lxml.html.tostring(tree, pretty_print=True)
@@ -17,21 +18,16 @@ class Vimeo(object):
                 for x,y in og.items():
                     print "%-15s => %s" % (x, y)
         
-            result = desc
-            #if 'title' in og:
-            #    result += "<h1>%s</h1>" % og['title']
-            #if 'description' in og:
-            #    result += '<p>%s</p>\n' % og['description'] 
+            result['text'] = desc
+            result['video'] = []
 
             if 'video' in og:
-                height = 640
+                video = {}
                 if 'video:height' in og:
-                     height = og['video:height']
-                width = 391
+                    video['height'] = og['video:height']
                 if 'video:width' in og:
-                    width = og['video:width']
-                result += '<p><iframe src="{0}" frameborder="0" width="{1}" height="{2}"></embed></p>'.format(og['video'], width, height)
-                result += '<br/>\n'
+                    video['width'] = og['video:width']
+                video['url'] = og['video']
             return result
             
         else:

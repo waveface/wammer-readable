@@ -41,21 +41,28 @@ class GenericWeb(object):
     def __init__(self, verbose=False):
         self.verbose = verbose
 
-    def run(self, html, url=None):
+    def run(self, html, dom_tree=None, url=None):
+        result = {}
         url_base = None
-        origin = lxml.html.fromstring(html)
-        bases = origin.xpath("//base")
-        for b in bases:
-            href = b.get("href")
-            if href is not None:
-                url_base = href
+#        if dom_tree is None:
+#            dom_tree = lxml.html.fromstring(html)
 
         rb = Readable()
         tree = rb.grab_article(html)
 
         if tree is not None:
-            lxml.html.clean.autolink(tree)
-            fix_src(url, tree, url_base)
-            return lxml.html.tostring(tree, pretty_print=True)
+#            lxml.html.clean.autolink(tree)
+#            fix_src(url, tree, url_base)
+            result['text'] = lxml.html.tostring(tree, pretty_print=True)
+
+            tree = lxml.html.fromstring(result['text'])
+            result['images'] = []
+            imgs = tree.xpath('//img | //IMG')
+            for img in imgs:
+                src = img.get('src')
+                if src is not None:
+                    result['images'].append({'url': src})
+
+            return result
         else:
             return None

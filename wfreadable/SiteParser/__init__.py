@@ -1,7 +1,6 @@
 import re
 import youtube
 import vimeo
-import wikipedia
 import generic_web
 import boston_big_pictures
 import techcrunch
@@ -20,10 +19,10 @@ class Sites(object):
             'handler': vimeo.Vimeo(verbose=Verbose)
         },
 
-        {
-            'regex': '((http|https)://)?[a-zA-Z]+.wikipedia.org(/)?.*',
-            'handler': wikipedia.Wikipedia(verbose=Verbose)
-        },
+#        {
+#            'regex': '((http|https)://)?[a-zA-Z]+.wikipedia.org(/)?.*',
+#            'handler': wikipedia.Wikipedia(verbose=Verbose)
+#        },
 
         {
             'regex': '((http|https)://)?www.boston.com/bigpicture/.*',
@@ -52,7 +51,7 @@ class Sites(object):
     def is_match(self):
         return self.site_handler
 
-    def parse(self, html):
-        return self.site_handler.run(html, url=self.url)
+    def parse(self, html, dom_tree=None):
+        return self.site_handler.run(html, dom_tree=dom_tree, url=self.url)
 
 

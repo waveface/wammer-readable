@@ -8,6 +8,8 @@ class WebParser(object):
     def __init__(self, html=None, url=None):
         self.html = html
         self.url = url
+        self.base_url = url
+        self.dom_tree = None
 
     def fix_relative_url(self, fetch_url, tag_url):
         urlparts = urlparse(fetch_url)
@@ -22,22 +24,50 @@ class WebParser(object):
         pattern = re.compile(regex)
 
         if not pattern.match(tag_url):
-            if tag_url[0] == '/':
+            if tag_url.startswith("//"):
+                return "http:{0}".format(tag_url)
+            elif tag_url[0] == '/':
                 return "{0}{1}".format(url_base,  tag_url)
             else:
                 return "{0}{1}/{2}".format(url_base,  uri_path,  tag_url)
         return tag_url
 
-    def parse(self):
+    def normalize(self):
+        tree = lxml.html.fromstring(self.html)
+        tree.make_links_absolute(self.url, True)
+
+        bases = tree.xpath("//base")
+        for b in bases:
+            href = b.get('href')
+            if href is not None:
+                base_url = href
+
+        imgs = tree.xpath("//img | //IMG")
+        for img in imgs:
+            src = img.get('src')
+            if src is not None:
+                img.set('src', self.fix_relative_url(self.base_url or self.url, src))
+
+        self.dom_tree = tree
+        self.html = lxml.html.tostring(self.dom_tree)
+
+        return (self.dom_tree, self.html)
+
+    def extract(self):
         result = {}
 
+        if (self.dom_tree is None):
+            self.normalize()
+
         result['url'] = self.url
-        result['type'] = 'html'
+        result['type'] = 'website'
         result['images'] = []
         
         p = urlparse(self.url)
         if p:
-            result['provider'] = p.netloc
+            result['provider_display'] = p.netloc
+        else:
+            result['provider_display'] = self.url
 
         og = opengraph.OpenGraph()
         og.parser(self.html)
@@ -48,7 +78,7 @@ class WebParser(object):
                 result['title'] = og['title']
             if 'url' in og:
                 result['url'] = og['url']   
-            if 'site_name' in og:
+            if 'provider_name' in og:
                 result['site_name'] = og['site_name']
             if 'video' in og:
                 result['videos'] = []
@@ -58,7 +88,7 @@ class WebParser(object):
                 video['height'] = og['video:height']
                 video['width'] = og['video:width']
 
-                result.append(video)
+                result['videos'].append(video)
             if 'type' in og:
                 result['type'] = og['type']
             if 'image' in og:
@@ -71,15 +101,13 @@ class WebParser(object):
                     img['width'] = og['image:width']
                 result['images'].append(img)
                     
-        tree = lxml.html.fromstring(self.html)       
-
         if 'title' not in result:
-            tags = tree.xpath('//title | //TITLE')
+            tags = self.dom_tree.xpath('//title | //TITLE')
             for t in tags:
                 result['title'] = t.text
                 break
 
-        tags = tree.xpath('//meta | //META')
+        tags = self.dom_tree.xpath('//meta | //META')
         for t in tags:
             name = t.get('name')
             if name is None:
@@ -99,7 +127,7 @@ class WebParser(object):
 #            if src is not None:
 #                result['images'].append({'url': self.fix_relative_url(result['url'], src) })
 
-        links = tree.xpath("//link | //LINK")
+        links = self.dom_tree.xpath("//link | //LINK")
         for l in links:
             rel = l.get('rel')
             if rel is None:
@@ -108,11 +136,11 @@ class WebParser(object):
             if rel == 'shortcut icon':
                 href = l.get('href')
                 if href is not None:
-                    result['favicon'] = self.fix_relative_url(result['url'], href)
+                    result['favicon_url'] = self.fix_relative_url(self.base_url or result['url'], href)
             elif rel == 'image_src':
                 href = l.get('href')
                 if href is not None:
-                    result['images'].append({'url': self.fix_relative_url(result['url'], href), 'type': 'cover' })
+                    result['images'].append({'url': self.fix_relative_url(self.base_url or result['url'], href), 'type': 'cover' })
 
         return result
 
