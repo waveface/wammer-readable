@@ -107,8 +107,7 @@ class WFReadable(object):
                 return result
             return None
         except:
-            #raise WebSummarizeError
-            raise
+            raise WebSummarizeError
  
 
     def parse(self):
@@ -124,7 +123,7 @@ class WFReadable(object):
             (self.dom_tree, self.html) = wp.normalize()
             result = wp.extract()
         except:
-            raise
+            raise WebParseError
 
         t = self.extract_content()
         if t is not None:
