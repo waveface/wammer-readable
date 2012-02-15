@@ -18,7 +18,7 @@ class YouTube(object):
                 for x,y in og.items():
                     print "%-15s => %s" % (x, y)
         
-            result['text'] = desc
+            result['content'] = desc
             result['videos'] = []
 
             if 'video' in og:

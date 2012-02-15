@@ -43,17 +43,12 @@ class GenericWeb(object):
 
     def run(self, html, dom_tree=None, url=None):
         result = {}
-        url_base = None
-#        if dom_tree is None:
-#            dom_tree = lxml.html.fromstring(html)
 
         rb = Readable()
         tree = rb.grab_article(html)
 
         if tree is not None:
-#            lxml.html.clean.autolink(tree)
-#            fix_src(url, tree, url_base)
-            result['text'] = lxml.html.tostring(tree, pretty_print=True)
+            result['content'] = lxml.html.tostring(tree, pretty_print=True)
 
             tree = lxml.html.fromstring(result['text'])
             result['images'] = []

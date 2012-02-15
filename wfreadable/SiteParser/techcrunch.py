@@ -13,7 +13,7 @@ class Techcrunch(object):
         for a in authors:
             a.drop_tree()
 
-        result['text'] = lxml.html.tostring(tree, pretty_print=True)
+        result['content'] = lxml.html.tostring(tree, pretty_print=True)
 
         result['images'] = []
         images = tree.xpath('//img | //IMG')

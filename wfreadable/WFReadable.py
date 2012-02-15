@@ -93,13 +93,13 @@ class WFReadable(object):
         try:
             result = {}
             site = SiteParser.Sites(self.url)
-            text = None
             if site.is_match():
                 result = site.parse(self.html, self.dom_tree)
-                if 'text' in result:
-                    result['text'] = re.sub(r'\s+', ' ', result['text'])
+                if 'content' in result:
+                    # strip continous space
+                    result['content'] = re.sub(r'\s+', ' ', result['content'])
 
-                soul_tree = lxml.html.fromstring(result['text'])
+                soul_tree = lxml.html.fromstring(result['content'])
                 soul_text_only = soul_tree.text_content()
                 s = self.summarize(soul_text_only, 50)
                 result['description'] = s
@@ -128,7 +128,7 @@ class WFReadable(object):
 
         t = self.extract_content()
         if t is not None:
-            result['text'] = t['text']
+            result['content'] = t['content']
             if 'description' not in result:
                 result['description'] = t['description']
             elif len(t['description']) > 30:

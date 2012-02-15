@@ -18,8 +18,8 @@ class Vimeo(object):
                 for x,y in og.items():
                     print "%-15s => %s" % (x, y)
         
-            result['text'] = desc
-            result['video'] = []
+            result['content'] = desc
+            result['videos'] = []
 
             if 'video' in og:
                 video = {}
@@ -28,6 +28,7 @@ class Vimeo(object):
                 if 'video:width' in og:
                     video['width'] = og['video:width']
                 video['url'] = og['video']
+                result['videos'].append(video)
             return result
             
         else:

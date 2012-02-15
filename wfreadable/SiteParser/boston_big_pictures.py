@@ -37,5 +37,5 @@ class BigPicture(object):
             text = text + '</p>'
             idx = idx + 1
 
-        result['text'] = text
+        result['content'] = text
         return result
