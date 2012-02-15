@@ -50,7 +50,7 @@ class GenericWeb(object):
         if tree is not None:
             result['content'] = lxml.html.tostring(tree, pretty_print=True)
 
-            tree = lxml.html.fromstring(result['text'])
+            tree = lxml.html.fromstring(result['content'])
             result['images'] = []
             imgs = tree.xpath('//img | //IMG')
             for img in imgs:
