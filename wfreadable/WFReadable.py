@@ -8,13 +8,22 @@ from urllib import FancyURLopener
 from WebParser import *
 
 class PageFetchError(Exception):
-    pass
+    def __init__(self):
+        return
+    def __str__(self):
+        return "", "Fail to fetch the web page"
 
 class WebParseError(Exception):
-    pass
+    def __init__(self):
+        return
+    def __str__(self):
+        return "", "Fail to parse web page"
 
 class WebSummarizeError(Exception):
-    pass
+    def __init__(self):
+        return
+    def __str__(self):
+        return "", "Fail to summarize web page"
     
 
 class WFReadable(object):
