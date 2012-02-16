@@ -49,6 +49,7 @@ class GenericWeb(object):
 
         if tree is not None:
             result['content'] = lxml.html.tostring(tree, pretty_print=True)
+            result['score'] = tree.readable.score
 
             tree = lxml.html.fromstring(result['content'])
             result['images'] = []

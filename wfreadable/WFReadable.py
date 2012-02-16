@@ -139,7 +139,7 @@ class WFReadable(object):
             result['content'] = t['content']
             if 'description' not in result:
                 result['description'] = t['description']
-            elif len(t['description']) > 30:
+            elif 'score' in result and result['score'] > 10:
                 result['description'] = t['description']
 
             if 'images' in t:
