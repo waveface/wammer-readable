@@ -62,6 +62,7 @@ class WebParser(object):
         result['url'] = self.url
         result['type'] = 'website'
         result['images'] = []
+        result['title'] = ''
         
         p = urlparse(self.url)
         if p:

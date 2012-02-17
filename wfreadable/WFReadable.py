@@ -155,6 +155,7 @@ class WFReadable(object):
                 result['type'] = 'image'
                 result['description'] = ''
                 result['content'] = '<img src="{0}"/>'.format(self.url)
+                result['title'] = ''
                 return result
 
         result = {}
