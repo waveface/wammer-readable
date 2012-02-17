@@ -94,7 +94,7 @@ class WebParser(object):
                 result['type'] = og['type']
             if 'image' in og:
                 img = {}
-                img['url'] = og['image']
+                img['url'] = self.fix_relative_url(self.base_url or self.url, og['image']) 
                 if 'image:height' in og:
                     img['height'] = og['image:height']
                 if 'image:width' in og:
