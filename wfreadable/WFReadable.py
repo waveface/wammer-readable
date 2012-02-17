@@ -50,7 +50,8 @@ class WFReadable(object):
         class MyOpener(FancyURLopener):
             version = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_7) AppleWebKit/534.27+ (KHTML, like Gecko) Version/5.0.4 Safari/533.20.2"
         myopener = MyOpener()
-        page = myopener.open(url)
+        url = unicode(url)
+        page = myopener.open(url.encode('utf-8'))
         if page.getcode() == 200:
             ctype = page.headers['content-type']
             if re.match("image/.+", ctype, flags=re.I):
