@@ -57,7 +57,7 @@ class WFReadable(object):
             except UnicodeDecodeError:
                 return content
         else:
-            return ''
+            return None
 
     def summarize(self, text, wordno):
         try:
@@ -92,6 +92,8 @@ class WFReadable(object):
         if self.html is None:
             try:
                 self.html = self.fetch_page(self.url)
+                if self.html == None:
+                    return None
             except IOError:
                 raise PageFetchError
 
@@ -123,6 +125,8 @@ class WFReadable(object):
         if self.html is None:
             try:
                 self.html = self.fetch_page(self.url)
+                if self.html == None:
+                    return None
             except IOError:
                 raise PageFetchError
 
