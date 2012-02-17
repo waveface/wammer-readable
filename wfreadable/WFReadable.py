@@ -28,7 +28,7 @@ class WebSummarizeError(Exception):
 
 class WFReadable(object):
     def __init__(self, url, html=None):
-        if (re.match("http(s)?://.+", url)) is None:
+        if (re.match("http(s)?://.+", url, flags=re.IGNORECASE)) is None:
             url = "http://{0}".format(url)
 
         self.html = html

@@ -23,7 +23,7 @@ class WebParser(object):
         regex = "(http|https|ftp)://.*"
         pattern = re.compile(regex)
 
-        if not pattern.match(tag_url):
+        if not pattern.match(tag_url, flags=re.IGNORECASE):
             if tag_url.startswith("//"):
                 return "http:{0}".format(tag_url)
             elif tag_url[0] == '/':
@@ -36,7 +36,7 @@ class WebParser(object):
         tree = lxml.html.fromstring(self.html)
         tree.make_links_absolute(self.url, True)
 
-        bases = tree.xpath("//base")
+        bases = tree.xpath("//base | //BASE")
         for b in bases:
             href = b.get('href')
             if href is not None:
