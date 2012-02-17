@@ -21,9 +21,9 @@ class WebParser(object):
         uri_path = os.path.dirname(urlparts.path)
 
         regex = "(http|https|ftp)://.*"
-        pattern = re.compile(regex)
+        pattern = re.compile(regex, flags=re.I)
 
-        if not pattern.match(tag_url, flags=re.IGNORECASE):
+        if not pattern.match(tag_url):
             if tag_url.startswith("//"):
                 return "http:{0}".format(tag_url)
             elif tag_url[0] == '/':
