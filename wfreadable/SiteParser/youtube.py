@@ -23,12 +23,19 @@ class YouTube(object):
 
             if 'video' in og:
                 video = {}
+                h = 640
                 if 'video:height' in og:
                     video['height'] = og['video:height']
+                    h = video['height']
+                w = 391
                 if 'video:width' in og:
                     video['width'] = og['video:width']
+                    w = video['width']
                 video['url'] = og['video']
                 result['videos'].append(video)
+
+                embed = '<p><embed id="yt" src="{0}" type="application/x-shockwave-flash" width="{1}" height="{2}"></embed></p>'.format(og['video'], h, w)
+                result['content'] = "{0}{1}".format(embed, desc)
             return result
             
         else:
