@@ -7,9 +7,18 @@ class Vimeo(object):
 
     def run(self, html, dom_tree, url=None):
         result = {}
-        rb = Readable()
-        tree = rb.grab_article(html)
-        desc = lxml.html.tostring(tree, pretty_print=True)
+
+        desc = None
+        desc_tag = dom_tree.get_element_by_id('description')
+        if desc_tag is not None:
+            desc = lxml.html.tostring(desc_tag)
+
+        if desc is None:
+            rb = Readable()
+            tree = rb.grab_article(html)
+            desc = lxml.html.tostring(tree, pretty_print=True)
+
+        result['content'] = desc
 
         og = opengraph.OpenGraph()
         metas = og.parser(html)
@@ -18,7 +27,6 @@ class Vimeo(object):
                 for x,y in og.items():
                     print "%-15s => %s" % (x, y)
         
-            result['content'] = desc
             result['videos'] = []
 
             if 'video' in og:
@@ -33,7 +41,7 @@ class Vimeo(object):
                     w = video['width']
                 video['url'] = og['video']
                 result['videos'].append(video)
-                embed = '<p><iframe src="{0}" frameborder="0" width="{1}" height="{2}"></embed></p>'.format(og['video'], w, h)
+                embed = '<p><iframe src="{0}" frameborder="0" width="{1}" height="{2}"></iframe></p>'.format(og['video'], w, h)
                 result['content'] = '{0}{1}'.format(embed, desc)
             return result
             
