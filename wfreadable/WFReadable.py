@@ -24,6 +24,12 @@ class WebSummarizeError(Exception):
         return
     def __str__(self):
         return "", "Fail to summarize web page"
+
+class ImagePageURL(Exception):
+    def __init__(self):
+        return
+    def __str__(self):
+        return "", "Image page url"
     
 
 class WFReadable(object):
@@ -46,6 +52,9 @@ class WFReadable(object):
         myopener = MyOpener()
         page = myopener.open(url)
         if page.getcode() == 200:
+            ctype = page.headers['content-type']
+            if re.match("image/.+", ctype, flags=re.I):
+                raise ImagePageURL
             content = page.read()
             charset = page.headers.getparam('charset')
             if charset is None:
@@ -96,6 +105,10 @@ class WFReadable(object):
                     return None
             except IOError:
                 raise PageFetchError
+            except ImagePageURL:
+                result = {}
+                result['content'] = '<img src="{0}"/>'.format(self.url)
+                return result
 
         if self.dom_tree is None:
             wp = WebParser(self.html, self.url)
@@ -129,6 +142,20 @@ class WFReadable(object):
                     return None
             except IOError:
                 raise PageFetchError
+            except ImagePageURL:
+                result = {}
+                result['images'] = []
+                result['images'].append({'url': self.url})
+                p = urlparse(self.url)
+                if 'netloc' in p:
+                    result['provider_display'] = p.netloc
+                else:
+                    result['provider_display'] = ''
+                result['url'] = self.url
+                result['type'] = 'image'
+                result['description'] = ''
+                result['content'] = '<img src="{0}"/>'.format(self.url)
+                return result
 
         result = {}
         try:
