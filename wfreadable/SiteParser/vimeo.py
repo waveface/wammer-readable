@@ -23,11 +23,11 @@ class Vimeo(object):
 
             if 'video' in og:
                 video = {}
-                h = 640
+                h = 391
                 if 'video:height' in og:
                     video['height'] = og['video:height']
                     h = video['height']
-                w = 391
+                w = 640
                 if 'video:width' in og:
                     video['width'] = og['video:width']
                     w = video['width']
