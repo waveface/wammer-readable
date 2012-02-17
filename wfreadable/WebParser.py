@@ -101,7 +101,7 @@ class WebParser(object):
                     img['width'] = og['image:width']
                 result['images'].append(img)
                     
-        if 'title' not in result:
+        if result['title'] == '':
             tags = self.dom_tree.xpath('//title | //TITLE')
             for t in tags:
                 result['title'] = t.text
