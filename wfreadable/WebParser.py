@@ -95,7 +95,6 @@ class WebParser(object):
             if 'image' in og:
                 img = {}
                 img['url'] = og['image']
-                img['type'] = 'cover'
                 if 'image:height' in og:
                     img['height'] = og['image:height']
                 if 'image:width' in og:
@@ -141,7 +140,7 @@ class WebParser(object):
             elif rel == 'image_src':
                 href = l.get('href')
                 if href is not None:
-                    result['images'].append({'url': self.fix_relative_url(self.base_url or result['url'], href), 'type': 'cover' })
+                    result['images'].append({'url': self.fix_relative_url(self.base_url or result['url'], href) })
 
         return result
 
