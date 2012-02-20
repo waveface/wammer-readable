@@ -43,7 +43,5 @@ class Vimeo(object):
                 result['videos'].append(video)
                 embed = '<p><iframe src="{0}" frameborder="0" width="{1}" height="{2}"></iframe></p>'.format(og['video'], w, h)
                 result['content'] = '{0}{1}'.format(embed, desc)
-            return result
+        return result
             
-        else:
-            return desc

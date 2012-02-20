@@ -10,6 +10,7 @@ class YouTube(object):
         rb = Readable()
         tree = rb.grab_article(html)
         desc = lxml.html.tostring(tree, pretty_print=True)
+        result['content'] = desc
 
         og = opengraph.OpenGraph()
         metas = og.parser(html)
@@ -18,7 +19,6 @@ class YouTube(object):
                 for x,y in og.items():
                     print "%-15s => %s" % (x, y)
         
-            result['content'] = desc
             result['videos'] = []
 
             if 'video' in og:
@@ -36,7 +36,5 @@ class YouTube(object):
 
                 embed = '<p><embed id="yt" src="{0}" type="application/x-shockwave-flash" width="{1}" height="{2}"></embed></p>'.format(og['video'], w, h)
                 result['content'] = "{0}{1}".format(embed, desc)
-            return result
+        return result
             
-        else:
-            return desc
