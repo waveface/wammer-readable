@@ -172,7 +172,7 @@ class WFReadable(object):
             result['content'] = t['content']
             if 'description' not in result:
                 result['description'] = t['description']
-            elif 'score' in result and result['score'] > 10:
+            elif 'score' in t and t['score'] > 10:  #if our extraction got higher score
                 result['description'] = t['description']
 
             if 'images' in t:
