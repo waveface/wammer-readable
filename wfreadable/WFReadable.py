@@ -126,7 +126,7 @@ class WFReadable(object):
 
                 soul_tree = lxml.html.fromstring(result['content'])
                 soul_text_only = soul_tree.text_content()
-                s = self.summarize(soul_text_only, 50)
+                s = self.summarize(soul_text_only, 75)
                 result['description'] = s
 
                 return result
