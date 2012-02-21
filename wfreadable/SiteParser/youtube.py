@@ -1,6 +1,7 @@
 import lxml.html
 from readable import *
 import opengraph
+import urlparse
 class YouTube(object):
     def __init__(self, verbose=False):
         self.verbose = verbose
