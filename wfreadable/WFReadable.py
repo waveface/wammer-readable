@@ -149,7 +149,7 @@ class WFReadable(object):
                 result['images'].append({'url': self.url})
                 p = urlparse(self.url)
                 if 'netloc' in p:
-                    result['provider_display'] = p.netloc
+                    result['provider_display'] = p.netloc.lower()
                 else:
                     result['provider_display'] = ''
                 result['url'] = self.url

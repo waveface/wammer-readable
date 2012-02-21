@@ -66,7 +66,7 @@ class WebParser(object):
         
         p = urlparse(self.url)
         if p:
-            result['provider_display'] = p.netloc
+            result['provider_display'] = p.netloc.lower()
         else:
             result['provider_display'] = self.url
 
@@ -76,7 +76,7 @@ class WebParser(object):
             if 'description' in og:
                 result['description'] = og['description']
             if 'title' in og:
-                result['title'] = og['title']
+                result['title'] = og['title'].strip()
             if 'url' in og:
                 result['url'] = og['url']   
             if 'provider_name' in og:
@@ -104,7 +104,7 @@ class WebParser(object):
         if result['title'] == '':
             tags = self.dom_tree.xpath('//title | //TITLE')
             for t in tags:
-                result['title'] = t.text
+                result['title'] = t.text.strip()
                 break
 
         # FIXME: this is a workaround to fill-in empty title with URL
