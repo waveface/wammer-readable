@@ -6,28 +6,33 @@ import re
 from urllib import URLopener
 from urllib import FancyURLopener
 from WebParser import *
+import traceback
 
 class PageFetchError(Exception):
-    def __init__(self):
-        return
+    def __init__(self, trace=None):
+        self.traceback = trace
+
     def __str__(self):
         return "", "Fail to fetch the web page"
 
 class WebParseError(Exception):
-    def __init__(self):
-        return
+    def __init__(self, trace=None):
+        self.traceback = trace
+
     def __str__(self):
         return "", "Fail to parse web page"
 
 class WebSummarizeError(Exception):
-    def __init__(self):
-        return
+    def __init__(self, trace=None):
+        self.traceback = trace
+
     def __str__(self):
         return "", "Fail to summarize web page"
 
 class ImagePageURL(Exception):
-    def __init__(self):
-        return
+    def __init__(self, trace=None):
+        self.traceback = trace
+
     def __str__(self):
         return "", "Image page url"
     
@@ -132,7 +137,11 @@ class WFReadable(object):
                 return result
             return None
         except:
-            raise WebSummarizeError
+            stack = traceback.format_stack(sys.exc_info()[2].tb_frame)
+            ss = "".join(stack)
+            tb = traceback.format_tb(sys.exc_info()[2])
+            stb = "".join(tb)
+            raise WebSummarizeError("{0}\n{1}".format(stb, ss))
  
 
     def parse(self):
@@ -165,7 +174,11 @@ class WFReadable(object):
             (self.dom_tree, self.html) = wp.normalize()
             result = wp.extract()
         except:
-            raise WebParseError
+            stack = traceback.format_stack(sys.exc_info()[2].tb_frame)
+            ss = "".join(stack)
+            tb = traceback.format_tb(sys.exc_info()[2])
+            stb = "".join(tb)
+            raise WebParseError("{0}\n{1}".format(stb, ss))
 
         t = self.extract_content()
         if t is not None:
