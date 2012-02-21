@@ -107,6 +107,10 @@ class WebParser(object):
                 result['title'] = t.text
                 break
 
+        # FIXME: this is a workaround to fill-in empty title with URL
+        if result['title'] == '':
+            result['title'] = self.url
+
         tags = self.dom_tree.xpath('//meta | //META')
         for t in tags:
             name = t.get('name')
