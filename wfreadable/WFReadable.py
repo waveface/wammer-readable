@@ -136,12 +136,12 @@ class WFReadable(object):
 
                 return result
             return None
-        except:
+        except Exception, e:
             stack = traceback.format_stack(sys.exc_info()[2].tb_frame)
             ss = "".join(stack)
             tb = traceback.format_tb(sys.exc_info()[2])
             stb = "".join(tb)
-            raise WebSummarizeError("{0}\n{1}".format(stb, ss))
+            raise WebSummarizeError("{0}\n{1}\n{2}".format(stb, ss, e))
  
 
     def parse(self):
@@ -173,12 +173,12 @@ class WFReadable(object):
             wp = WebParser(self.html, self.url)
             (self.dom_tree, self.html) = wp.normalize()
             result = wp.extract()
-        except:
+        except Exception, e:
             stack = traceback.format_stack(sys.exc_info()[2].tb_frame)
             ss = "".join(stack)
             tb = traceback.format_tb(sys.exc_info()[2])
             stb = "".join(tb)
-            raise WebParseError("{0}\n{1}".format(stb, ss))
+            raise WebParseError("{0}\n{1}\n{2}".format(stb, ss, e))
 
         t = self.extract_content()
         if t is not None:
