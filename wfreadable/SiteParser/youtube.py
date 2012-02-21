@@ -34,7 +34,10 @@ class YouTube(object):
                 video['url'] = og['video']
                 result['videos'].append(video)
 
-                embed = '<p><embed id="yt" src="{0}" type="application/x-shockwave-flash" width="{1}" height="{2}"></embed></p>'.format(og['video'], w, h)
+                #embed = '<p><embed id="yt" src="{0}" type="application/x-shockwave-flash" width="{1}" height="{2}"></embed></p>'.format(og['video'], w, h)
+                paths = urlparse.urlparse(video['url']).path.split('/')
+                src = "http://www.youtube.com/embed/{0}".format(paths[2])
+                embed = '<p><iframe type="text/html" width="{0}" height="{1}" src="{2}" frameborder="0"></iframe></p'.format(w, h, src)
                 result['content'] = "{0}{1}".format(embed, desc)
         return result
             
