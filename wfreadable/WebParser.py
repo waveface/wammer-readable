@@ -72,35 +72,36 @@ class WebParser(object):
 
         og = opengraph.OpenGraph()
         og.parser(self.html)
-        if og.is_valid():
-            if 'description' in og:
-                result['description'] = og['description']
-            if 'title' in og:
-                result['title'] = og['title'].strip()
-            if 'url' in og:
-                result['url'] = og['url']   
-            if 'provider_name' in og:
-                result['site_name'] = og['site_name']
-            if 'video' in og:
-                result['videos'] = []
 
-                video = {}
-                video['url'] = og['video']
-                video['height'] = og['video:height']
-                video['width'] = og['video:width']
+        # opengraph parsing
+        if 'description' in og:
+            result['description'] = og['description']
+        if 'title' in og:
+            result['title'] = og['title'].strip()
+        if 'url' in og:
+            result['url'] = og['url']   
+        if 'provider_name' in og:
+            result['site_name'] = og['site_name']
+        if 'video' in og:
+            result['videos'] = []
 
-                result['videos'].append(video)
-            if 'type' in og:
-                result['type'] = og['type']
-            if 'image' in og:
-                img = {}
-                img['url'] = self.fix_relative_url(self.base_url or self.url, og['image']) 
-                if 'image:height' in og:
-                    img['height'] = og['image:height']
-                if 'image:width' in og:
-                    img['width'] = og['image:width']
-                result['images'].append(img)
-                    
+            video = {}
+            video['url'] = og['video']
+            video['height'] = og['video:height']
+            video['width'] = og['video:width']
+
+            result['videos'].append(video)
+        if 'type' in og:
+            result['type'] = og['type']
+        if 'image' in og:
+            img = {}
+            img['url'] = self.fix_relative_url(self.base_url or self.url, og['image']) 
+            if 'image:height' in og:
+                img['height'] = og['image:height']
+            if 'image:width' in og:
+                img['width'] = og['image:width']
+            result['images'].append(img)
+                
         if result['title'] == '':
             tags = self.dom_tree.xpath('//title | //TITLE')
             for t in tags:
