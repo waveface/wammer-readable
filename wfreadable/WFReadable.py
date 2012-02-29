@@ -55,7 +55,7 @@ class WFReadable(object):
         url = unicode(url)
         request = urllib2.Request(url.encode('utf-8'))
         
-        page = myopener.open(request)
+        page = opener.open(request)
         if page.getcode() == 200:
             ctype = page.headers['content-type']
             if re.match("image/.+", ctype, flags=re.I):
