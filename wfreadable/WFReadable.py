@@ -1,10 +1,8 @@
 import sys
 import os
-import urllib
+import urllib2
 import SiteParser
 import re
-from urllib import URLopener
-from urllib import FancyURLopener
 from WebParser import *
 import traceback
 
@@ -52,11 +50,12 @@ class WFReadable(object):
         return resulting_list
 
     def fetch_page(self, url):
-        class MyOpener(FancyURLopener):
-            version = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_7) AppleWebKit/534.27+ (KHTML, like Gecko) Version/5.0.4 Safari/533.20.2"
-        myopener = MyOpener()
+        opener = urllib2.build_opener()
+        opener.addheaders = [('User-agent', "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_7) AppleWebKit/534.27+ (KHTML, like Gecko) Version/5.0.4 Safari/533.20.2")]
         url = unicode(url)
-        page = myopener.open(url.encode('utf-8'))
+        request = urllib2.Request(url.encode('utf-8'))
+        
+        page = myopener.open(request)
         if page.getcode() == 200:
             ctype = page.headers['content-type']
             if re.match("image/.+", ctype, flags=re.I):
