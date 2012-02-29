@@ -51,7 +51,8 @@ class WFReadable(object):
 
     def fetch_page(self, url):
         opener = urllib2.build_opener()
-        opener.addheaders = [('User-agent', "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_7) AppleWebKit/534.27+ (KHTML, like Gecko) Version/5.0.4 Safari/533.20.2")]
+        opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+   #     opener.addheaders = [('User-agent', "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_7) AppleWebKit/534.27+ (KHTML, like Gecko) Version/5.0.4 Safari/533.20.2")]
         url = unicode(url)
         request = urllib2.Request(url.encode('utf-8'))
         
