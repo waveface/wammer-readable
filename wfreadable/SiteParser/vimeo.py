@@ -1,6 +1,7 @@
 import lxml.html
 from readable import *
 import opengraph
+from urlparse import urlparse
 class Vimeo(object):
     def __init__(self, verbose=False):
         self.verbose = verbose
@@ -40,8 +41,18 @@ class Vimeo(object):
                     video['width'] = og['video:width']
                     w = video['width']
                 video['url'] = og['video']
+
+                if 'url' in og:
+                    p = urlparse(og['url'])
+                else:
+                    p = urlparse(url)
+                if p is not None:
+                    player = "http://player.vimeo.com/video{0}".format(p.path)
+                else:
+                    player = og['video']
+
                 result['videos'].append(video)
-                embed = '<p><iframe src="{0}" frameborder="0" width="{1}" height="{2}"></iframe></p>'.format(og['video'], w, h)
+                embed = '<p><iframe src="{0}" frameborder="0" width="{1}" height="{2}" webkitAllowFullScreen mozallowfulllscreen allowFullScreen></iframe></p>'.format(player, w, h)
                 result['content'] = '{0}{1}'.format(embed, desc)
         return result
             
