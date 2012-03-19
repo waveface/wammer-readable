@@ -58,19 +58,30 @@ class WFReadable(object):
         
         page = opener.open(request)
         if page.getcode() == 200:
+            text = False
+            result = {}
+            result['type'] = 'html'
+
             ctype = page.headers['content-type']
             if re.match("image/.+", ctype, flags=re.I):
-                raise ImagePageURL
+                result['type'] = 'image'
+                result['content'] = '<img src="{0}"/>'.format(url)
+                return result
+
+            if re.match("text/plain", ctype, flags=re.I):
+                result['type'] = 'text'
+                text = True
             content = page.read()
             charset = page.headers.getparam('charset')
-            if charset is None:
+            if text is False and charset is None:
                 import BeautifulSoup
                 soup = BeautifulSoup.BeautifulSoup(content)
                 charset = soup.originalEncoding
             try:
-                return content.decode(charset)
+                result['content'] = content.decode(charset)
             except UnicodeDecodeError:
-                return content
+                result['content'] content
+            return result
         else:
             return None
 
@@ -106,15 +117,23 @@ class WFReadable(object):
     def extract_content(self):
         if self.html is None:
             try:
-                self.html = self.fetch_page(self.url)
+                dw = self.fetch_page(self.url)
+                self.html = dw['content']
                 if self.html == None:
                     return None
+
+                if dw['type'] == 'image':
+                    result = {}
+                    result['content'] = '<img src="{0}"/>'.format(self.url)
+                    return result
+
+                if dw['type'] == 'text':
+                    result = {}
+                    result['content'] = dw['content']
+                    return result
+
             except IOError:
                 raise PageFetchError
-            except ImagePageURL:
-                result = {}
-                result['content'] = '<img src="{0}"/>'.format(self.url)
-                return result
 
         if self.dom_tree is None:
             wp = WebParser(self.html, self.url)
@@ -147,26 +166,39 @@ class WFReadable(object):
     def parse(self):
         if self.html is None:
             try:
-                self.html = self.fetch_page(self.url)
+                dw = self.fetch_page(self.url)
+                self.html = dw['content']
                 if self.html == None:
                     return None
+
+                if dw['type'] == 'image':
+                    result = {}
+                    result['images'] = []
+                    result['images'].append({'url': self.url})
+                    p = urlparse(self.url)
+                    if 'netloc' in p:
+                        result['provider_display'] = p.netloc.lower()
+                    else:
+                        result['provider_display'] = ''
+                    result['url'] = self.url
+                    result['type'] = 'image'
+                    result['description'] = ''
+                    result['content'] = dw['content']
+                    result['title'] = ''
+                    return result
+
+                if dw['type'] == 'text':
+                    result = {}
+                    result['images'] = []
+                    result['url'] = self.url
+                    result['type'] = 'article'
+                    result['description'] = ''
+                    result['content'] = dw['content']
+                    result['title'] = self.summarize(dw['content'], 75)
+                    return result
+                    
             except IOError:
                 raise PageFetchError
-            except ImagePageURL:
-                result = {}
-                result['images'] = []
-                result['images'].append({'url': self.url})
-                p = urlparse(self.url)
-                if 'netloc' in p:
-                    result['provider_display'] = p.netloc.lower()
-                else:
-                    result['provider_display'] = ''
-                result['url'] = self.url
-                result['type'] = 'image'
-                result['description'] = ''
-                result['content'] = '<img src="{0}"/>'.format(self.url)
-                result['title'] = ''
-                return result
 
         result = {}
         try:
