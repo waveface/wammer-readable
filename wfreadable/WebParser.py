@@ -126,7 +126,7 @@ class WebParser(object):
             if name == 'keywords':
                 result['keywords'] = t.get('content')
 
-        imgs = tree.xpath("//img | //IMG")
+        imgs = self.dom_tree.xpath("//img | //IMG")
         for img in imgs:
             width = img.get('width')
             height = img.get('height')
