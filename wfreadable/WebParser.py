@@ -145,7 +145,7 @@ class WebParser(object):
                         found = True
                         break
                 if not found:
-                    result['images'].append({'url': url_fix, src) })
+                    result['images'].append({'url': url_fix})
 
         links = self.dom_tree.xpath("//link | //LINK")
         for l in links:
