@@ -138,7 +138,14 @@ class WebParser(object):
                 continue
             src = img.get('src')
             if src is not None:
-                result['images'].append({'url': self.fix_relative_url(result['url'], src) })
+                url_fix = self.fix_relative_url(result['url'], src)
+                found = False
+                for img in images:
+                    if img['url'] == url_fix:
+                        found = True
+                        break
+                if not found:
+                    result['images'].append({'url': url_fix, src) })
 
         links = self.dom_tree.xpath("//link | //LINK")
         for l in links:
