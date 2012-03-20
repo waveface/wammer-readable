@@ -67,6 +67,9 @@ class WFReadable(object):
             result = {}
             result['type'] = 'html'
 
+            # fix the url if we are redirected
+            self.url = page.geturl()
+
             ctype = page.headers['content-type']
             if re.match("image/.+", ctype, flags=re.I):
                 result['type'] = 'image'
