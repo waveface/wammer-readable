@@ -49,11 +49,16 @@ class WFReadable(object):
         resulting_list.extend (x for x in array2 if x not in resulting_list)
         return resulting_list
 
+    def url_preprocessing(self, url):
+        if (re.match(".*blogspot.com.*", url, flags=re.IGNORECASE)) or (re.match(".*blogger.com.*", url, flags=re.IGNORECASE)):
+            return unicode("{0}?m=1".format(url))
+
     def fetch_page(self, url):
         opener = urllib2.build_opener()
         opener.addheaders = [('User-agent', 'Mozilla/5.0')]
    #     opener.addheaders = [('User-agent', "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_7) AppleWebKit/534.27+ (KHTML, like Gecko) Version/5.0.4 Safari/533.20.2")]
-        url = unicode(url)
+        #url = unicode(url)
+        url = self.url_preprocessing(url)
         request = urllib2.Request(url.encode('utf-8'))
         
         page = opener.open(request)
@@ -78,9 +83,12 @@ class WFReadable(object):
                 soup = BeautifulSoup.BeautifulSoup(content)
                 charset = soup.originalEncoding
             try:
-                result['content'] = content.decode(charset)
+                if charset is None:
+                    result['content'] = content
+                else:
+                    result['content'] = content.decode(charset)
             except UnicodeDecodeError:
-                result['content'] content
+                result['content'] = content
             return result
         else:
             return None
