@@ -87,8 +87,10 @@ class WebParser(object):
 
             video = {}
             video['url'] = og['video']
-            video['height'] = og['video:height']
-            video['width'] = og['video:width']
+            if 'video:height' in og:
+                video['height'] = og['video:height']
+            if 'video:width' in og:
+                video['width'] = og['video:width']
 
             result['videos'].append(video)
         if 'type' in og:
