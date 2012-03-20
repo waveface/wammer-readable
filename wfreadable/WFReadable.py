@@ -52,6 +52,7 @@ class WFReadable(object):
     def url_preprocessing(self, url):
         if (re.match(".*blogspot.com.*", url, flags=re.IGNORECASE)) or (re.match(".*blogger.com.*", url, flags=re.IGNORECASE)):
             return unicode("{0}?m=1".format(url))
+        return unicode(url)
 
     def fetch_page(self, url):
         opener = urllib2.build_opener()
