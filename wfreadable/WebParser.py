@@ -64,12 +64,6 @@ class WebParser(object):
         result['images'] = []
         result['title'] = ''
         
-        p = urlparse(self.url)
-        if p:
-            result['provider_display'] = p.netloc.lower()
-        else:
-            result['provider_display'] = self.url
-
         og = opengraph.OpenGraph()
         og.parser(self.html)
 
@@ -103,6 +97,12 @@ class WebParser(object):
             if 'image:width' in og:
                 img['width'] = og['image:width']
             result['images'].append(img)
+
+        p = urlparse(result['url'])
+        if p:
+            result['provider_display'] = p.netloc.lower()
+        else:
+            result['provider_display'] = result['url']
                 
         if result['title'] == '':
             tags = self.dom_tree.xpath('//title | //TITLE')
