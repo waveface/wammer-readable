@@ -109,6 +109,8 @@ class WFReadable(object):
         words = text.split(" ")
         wc = 0
         for w in words:
+            if w == '': 
+                continue
             l = len(w)
             if l > 12:
                 if wc + l > wordno:
@@ -203,9 +205,10 @@ class WFReadable(object):
                     result['images'] = []
                     result['url'] = self.url
                     result['type'] = 'article'
-                    result['description'] = ''
-                    result['content'] = dw['content']
-                    result['title'] = self.summarize(dw['content'], 75)
+                    content = dw['content'].strip()
+                    result['description'] = self.summarize(content, 75)
+                    result['content'] = content
+                    result['title'] = self.summarize(content, 10)
                     return result
                     
             except IOError:
