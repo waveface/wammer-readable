@@ -26,7 +26,7 @@ class WebParser(object):
         if not pattern.match(tag_url):
             if tag_url.startswith("//"):
                 return "http:{0}".format(tag_url)
-            elif tag_url[0] == '/':
+            elif len(tag_url) > 0 and tag_url[0] == '/':
                 return "{0}{1}".format(url_base,  tag_url)
             else:
                 return "{0}{1}/{2}".format(url_base,  uri_path,  tag_url)
