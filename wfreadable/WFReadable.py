@@ -1,6 +1,7 @@
 import sys
 import os
 import urllib2
+import cookielib
 import SiteParser
 import re
 from WebParser import *
@@ -55,7 +56,8 @@ class WFReadable(object):
         return unicode(url)
 
     def fetch_page(self, url):
-        opener = urllib2.build_opener()
+        jar = cookielib.CookieJar()
+        opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(jar))
         opener.addheaders = [('User-agent', 'Mozilla/5.0')]
    #     opener.addheaders = [('User-agent', "Mozilla/5.0 (iPhone; U; CPU like Mac OS X; en) AppleWebKit/420+ (KHTML, like Gecko) Version/3.0 Mobile/1A543 Safari/419.3")]
         url = self.url_preprocessing(url)
