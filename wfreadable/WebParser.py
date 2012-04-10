@@ -134,14 +134,17 @@ class WebParser(object):
             height = img.get('height')
             if width is None and height is None:
                 continue
-            if width is not None: 
-                width = int(filter(lambda x:x.isdigit(), width))
-                if width < 100:
-                    continue
-            if height is not None:
-                height = int(filter(lambda x:x.isdigit(), height))
-                if height < 100:
-                    continue
+            try:
+                if width is not None: 
+                    width = int(filter(lambda x:x.isdigit(), width))
+                    if width < 100:
+                        continue
+                if height is not None:
+                    height = int(filter(lambda x:x.isdigit(), height))
+                    if height < 100:
+                        continue
+            except:
+                continue
             src = img.get('src')
             if src is not None:
                 tmp = {'url': self.fix_relative_url(self.base_url or result['url'], src)}
