@@ -51,7 +51,7 @@ class WFReadable(object):
         return resulting_list
 
     def url_preprocessing(self, url):
-        if (re.match(".*blogspot.com.*", url, flags=re.IGNORECASE)) or (re.match(".*blogger.com.*", url, flags=re.IGNORECASE)):
+        if (re.match(".*blogspot.com.*", url, flags=re.IGNORECASE)) or (re.match(".*blogger.com.*", url, flags=re.IGNORECASE)) or (re.match(".*examiner.com.*", url, flags=re.IGNORECASE)):
             return unicode("{0}?m=1".format(url))
         return unicode(url)
 
