@@ -1,4 +1,5 @@
 import lxml.html
+from lxml.html.clean import Cleaner
 import opengraph
 import os
 from urlparse import urlparse
@@ -33,6 +34,8 @@ class WebParser(object):
         return tag_url
 
     def normalize(self):
+        cleaner = Cleaner(kill_tags=["noscript"], page_structure=False, scripts=True, javascript=True, style=True, meta=False)
+        self.html = cleaner.clean_html(self.html)
         tree = lxml.html.fromstring(self.html)
         tree.make_links_absolute(self.url, True)
 
