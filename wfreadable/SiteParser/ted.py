@@ -10,7 +10,8 @@ class TedTV(object):
         result = {}
         rb = Readable()
         tree = rb.grab_article(html)
-        desc = lxml.html.tostring(tree, pretty_print=True)
+        #desc = lxml.html.tostring(tree, pretty_print=True)
+        desc = tree.text_content()
         result['content'] = desc
 
         og = opengraph.OpenGraph()
@@ -24,10 +25,9 @@ class TedTV(object):
 
             if 'video' in og:
                 video = {}
-                h = 391
                 video['url'] = og['video']
                 result['videos'].append(video)
 
-                result['content'] = "<video width='350' src='{0}'/></video><br/>{1}".format(video['url'], result['content'])
+                result['content'] = "<video width='640' src='{0}' controls></video><br/>{1}".format(video['url'], result['content'])
         return result
             

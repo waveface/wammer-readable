@@ -4,6 +4,7 @@ import vimeo
 import generic_web
 import boston_big_pictures
 import techcrunch
+import ted
 
 Verbose=False
 
@@ -37,6 +38,7 @@ class Sites(object):
         {
             'regex': '((http|https)://)?www.ted.com/.*',
             'handler': ted.TedTV(verbose=Verbose)
+        },
         
         {
             'regex': '.+',
