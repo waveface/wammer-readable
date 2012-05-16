@@ -34,9 +34,11 @@ class WebParser(object):
         return tag_url
 
     def normalize(self):
-        cleaner = Cleaner(kill_tags=["noscript"], page_structure=False, scripts=True, javascript=True, style=True, meta=False)
-        self.html = cleaner.clean_html(self.html)
         tree = lxml.html.fromstring(self.html)
+        # drop noscript tags
+        noscript = tree.xpath("//noscript | // NOSCRIPT")
+        for ns in noscript:
+            ns.drop_tree()
         tree.make_links_absolute(self.url, True)
 
         bases = tree.xpath("//base | //BASE")
