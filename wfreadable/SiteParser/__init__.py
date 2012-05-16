@@ -33,6 +33,10 @@ class Sites(object):
             'regex': '((http|https)://)?techcrunch.com/.*',
             'handler': techcrunch.Techcrunch(verbose=Verbose)
         },
+
+        {
+            'regex': '((http|https)://)?www.ted.com/.*',
+            'handler': ted.TedTV(verbose=Verbose)
         
         {
             'regex': '.+',
