@@ -82,7 +82,9 @@ class WFReadable(object):
                 result['type'] = 'text'
                 text = True
             content = page.read()
-            charset = page.headers.getparam('charset')
+            charset = None
+            if 'charset' in page.headers:
+                charset = page.headers['charset']
             if text is False and charset is None:
                 import BeautifulSoup
                 soup = BeautifulSoup.BeautifulSoup(content)
