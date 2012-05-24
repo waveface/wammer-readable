@@ -96,10 +96,14 @@ class WFReadable(object):
             charset = None
             if 'charset' in page.headers:
                 charset = page.headers['charset']
+            checkCharset = re.search("charset=(.+)$", ctype)
+            if checkCharset is not None:
+                charset = checkCharset.group(1)
             if text is False and charset is None:
                 import BeautifulSoup
                 soup = BeautifulSoup.BeautifulSoup(content)
                 charset = soup.originalEncoding
+
             try:
                 if charset is None:
                     result['content'] = content
