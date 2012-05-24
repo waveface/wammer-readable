@@ -15,7 +15,7 @@ class Vimeo(object):
             if desc_tag is not None:
                 desc = lxml.html.tostring(desc_tag)
         except KeyError:
-            continue
+            pass
 
         if desc is None:
             rb = Readable()
