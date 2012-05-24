@@ -83,6 +83,16 @@ class WFReadable(object):
                 result['type'] = 'text'
                 text = True
             content = page.read()
+
+            if ('Content-Encoding' in page.headers.keys() and page.headers['Content-Encoding'] == 'gzip') or \
+               ('content-encoding' in page.headers.keys() and page.headers['content-encoding'] == 'gzip'):
+                # handle gzip response
+                import gzip
+                import cStringIO
+                gz = gzip.GzipFile(fileobj=cStringIO.StringIO(content), mode='rb')
+                content = gz.read()
+                gz.close()  
+
             charset = None
             if 'charset' in page.headers:
                 charset = page.headers['charset']
