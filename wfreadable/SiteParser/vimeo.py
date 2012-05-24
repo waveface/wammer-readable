@@ -10,9 +10,12 @@ class Vimeo(object):
         result = {}
 
         desc = None
-        desc_tag = dom_tree.get_element_by_id('description')
-        if desc_tag is not None:
-            desc = lxml.html.tostring(desc_tag)
+        try:
+            desc_tag = dom_tree.get_element_by_id('description')
+            if desc_tag is not None:
+                desc = lxml.html.tostring(desc_tag)
+        except KeyError:
+            continue
 
         if desc is None:
             rb = Readable()
