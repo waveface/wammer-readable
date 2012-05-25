@@ -96,7 +96,7 @@ class WFReadable(object):
             charset = None
             if 'charset' in page.headers:
                 charset = page.headers['charset']
-            checkCharset = re.search("charset=(.+)$", ctype)
+            checkCharset = re.search("charset=\"?(.+)\"?$", ctype)
             if checkCharset is not None:
                 charset = checkCharset.group(1)
             if text is False and charset is None:
