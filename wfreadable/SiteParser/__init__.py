@@ -5,18 +5,19 @@ import generic_web
 import boston_big_pictures
 import techcrunch
 import ted
+import slashdot
 
 Verbose=False
 
 class Sites(object):
     SITE_MAP = [
         {
-            'regex': '((http|https)://)?www.youtube.com(/)?.*',
+            'regex': '((http|https)://)?www\.youtube\.com(/)?.*',
             'handler': youtube.YouTube(verbose=Verbose)
         },
 
         {
-            'regex': '((http|https)://)?(www.)?vimeo.com(/)?.*',
+            'regex': '((http|https)://)?(www.)?vimeo\.com(/)?.*',
             'handler': vimeo.Vimeo(verbose=Verbose)
         },
 
@@ -26,17 +27,22 @@ class Sites(object):
 #        },
 
         {
-            'regex': '((http|https)://)?www.boston.com/bigpicture/.*',
+            'regex': '((http|https)://)?www.boston\.com/bigpicture/.*',
             'handler': boston_big_pictures.BigPicture(verbose=Verbose)
         },
 
         {
-            'regex': '((http|https)://)?techcrunch.com/.*',
+            'regex': '((http|https)://)?.+slashdot.org/.*',
+            'handler': slashdot.Slashdot(verbose=Verbose)
+        },
+
+        {
+            'regex': '((http|https)://)?techcrunch\.com/.*',
             'handler': techcrunch.Techcrunch(verbose=Verbose)
         },
 
         {
-            'regex': '((http|https)://)?www.ted.com/.*',
+            'regex': '((http|https)://)?www\.ted\.com/.*',
             'handler': ted.TedTV(verbose=Verbose)
         },
         
