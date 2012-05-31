@@ -37,19 +37,21 @@ def fix_src(url, html_tree, url_base=None):
                 atag.set("href", "{0}{1}{2}".format(url_base, uri_path, href))
 
 
-class GenericWeb(object):
+class Slashdot(object):
     def __init__(self, verbose=False):
         self.verbose = verbose
 
     def run(self, html, dom_tree=None, url=None):
         result = {}
 
+        # this is unique in slashdot 
+        tree = dom_tree.get_element_by_id('firehoselist')
+        html = lxml.html.tostring(tree, pretty_print=True)
+
         rb = Readable()
         tree = rb.grab_article(html)
 
         if tree is not None:
-            # this is unique in slashdot 
-            tree = tree.get_element_by_id('firehoselist')
             result['content'] = lxml.html.tostring(tree, pretty_print=True)
 
             tree = lxml.html.fromstring(result['content'])
