@@ -51,6 +51,11 @@ class Sites(object):
             'regex': '((http|https)://)?www\.bbc\.co\.uk/.*',
             'handler': bbc_news.BBCNews(verbose=Verbose)
         },
+
+        {
+            'regex': '((http|https)://)?www\.bbc\.com/.*',
+            'handler': bbc_news.BBCNews(verbose=Verbose)
+        },
         
         {
             'regex': '.+',
