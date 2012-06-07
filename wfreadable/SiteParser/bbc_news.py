@@ -38,6 +38,10 @@ class BBCNews(object):
                 bookmark_header = tree.get_element_by_id("page-bookmark-links-head")
                 if bookmark_header is not None:
                     bookmark_header.drop_tree()
+            except Exception:
+                pass
+
+            try:
                 bookmark_footer = tree.get_element_by_id("page-bookmark-links-foot")
                 if bookmark_footer is not None:
                     bookmark_footer.drop_tree()
