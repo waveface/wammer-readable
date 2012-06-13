@@ -7,6 +7,7 @@ import techcrunch
 import ted
 import slashdot
 import bbc_news
+import wikipedia
 
 Verbose=False
 
@@ -22,10 +23,10 @@ class Sites(object):
             'handler': vimeo.Vimeo(verbose=Verbose)
         },
 
-#        {
-#            'regex': '((http|https)://)?[a-zA-Z]+.wikipedia.org(/)?.*',
-#            'handler': wikipedia.Wikipedia(verbose=Verbose)
-#        },
+        {
+            'regex': '((http|https)://)?[a-zA-Z]+.wikipedia.org(/)?.*',
+            'handler': wikipedia.Wikipedia(verbose=Verbose)
+        },
 
         {
             'regex': '((http|https)://)?www\.boston\.com/bigpicture/.*',
