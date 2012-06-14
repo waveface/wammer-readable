@@ -6,7 +6,7 @@ class Vimeo(object):
     def __init__(self, verbose=False):
         self.verbose = verbose
 
-    def _findMetaContentByXpath(tree, path):
+    def _findMetaContentByXpath(self, tree, path):
         items = tree.xpath(path)
         if items is None:
             return None
