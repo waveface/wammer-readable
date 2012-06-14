@@ -12,7 +12,9 @@ class Vimeo(object):
             return None
 
         for item in items:
-            return item['content']
+            return item.get('content')
+
+        return None
 
     def run(self, html, dom_tree, url=None):
         result = {}
@@ -68,29 +70,32 @@ class Vimeo(object):
 
         else: # there is no og tag, since someday, vimeo didn't support opengraph tags
             video = {}
-            embedUrl = self._findMetaContentByXpath(dom_tree, "/@itemprop=embedUrl")
+            embedUrl = self._findMetaContentByXpath(dom_tree, "//meta[@itemprop='embedUrl']")
             if embedUrl is None:
                 return result
             video['url'] = embedUrl
-            height = self._findMetaContentByXpath(dom_tree, "/@itemprop=height")
+            height = self._findMetaContentByXpath(dom_tree, "//meta[@itemprop='height']")
             if height is not None:
                 video['height'] = height
             else:
                 height = 640
-            width = self._findMetaContentByXpath(dom_tree, "/@itemprop=width")
+            width = self._findMetaContentByXpath(dom_tree, "//meta[@itemprop='width']")
             if width is not None:
                 video['width'] = width
             else:
                 width = 391
 
-            thumb = self._findMetaContentByXpath(dom_tree, "/@itemprop=image")
+            thumb = self._findMetaContentByXpath(dom_tree, "//meta[@itemprop='image']")
             if thumb is not None:
                 image = {}
                 image['url'] = thumb
                 image['height'] = height
                 image['width'] = width
+                if 'images' not in result:
+                    result['images'] = []
                 result['images'].append(image)
 
+            result['videos'] = []
             result['videos'].append(video)
             embed = '<p><iframe src="{0}" frameborder="0" width="{1}" height="{2}" webkitAllowFullScreen mozallowfulllscreen allowFullScreen></iframe></p>'.format(embedUrl, width, height)
             result['content'] = '{0}{1}'.format(embed, desc)

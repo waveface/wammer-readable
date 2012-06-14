@@ -255,6 +255,8 @@ class WFReadable(object):
 
             if 'images' in t:
                 result['images'] = self.merge_url_array(result['images'], t['images'])
+            if 'videos' in t:
+                result['videos'] = self.merge_url_array(result['videos'], t['videos'])
 
         return result
 
