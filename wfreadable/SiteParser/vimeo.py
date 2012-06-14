@@ -78,12 +78,12 @@ class Vimeo(object):
             if height is not None:
                 video['height'] = height
             else:
-                height = 640
+                height = 391
             width = self._findMetaContentByXpath(dom_tree, "//meta[@itemprop='width']")
             if width is not None:
                 video['width'] = width
             else:
-                width = 391
+                width = 640
 
             thumb = self._findMetaContentByXpath(dom_tree, "//meta[@itemprop='image']")
             if thumb is not None:
@@ -97,7 +97,7 @@ class Vimeo(object):
 
             result['videos'] = []
             result['videos'].append(video)
-            embed = '<p><iframe src="{0}" frameborder="0" width="{1}" height="{2}" webkitAllowFullScreen mozallowfulllscreen allowFullScreen></iframe></p>'.format(embedUrl, width, height)
+            embed = '<p><iframe src="{0}" frameborder="0" width="{1}" height="{2}" webkitAllowFullScreen mozallowfulllscreen allowFullScreen></iframe></p>'.format(embedUrl, 640, 391)
             result['content'] = '{0}{1}'.format(embed, desc)
                 
         return result
