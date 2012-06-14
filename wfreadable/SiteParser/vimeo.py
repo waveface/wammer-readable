@@ -66,34 +66,34 @@ class Vimeo(object):
                 embed = '<p><iframe src="{0}" frameborder="0" width="{1}" height="{2}" webkitAllowFullScreen mozallowfulllscreen allowFullScreen></iframe></p>'.format(player, w, h)
                 result['content'] = '{0}{1}'.format(embed, desc)
 
-            else: # there is no og tag, since someday, vimeo didn't support opengraph tags
-                video = {}
-                embedUrl = self._findMetaContentByXpath(dom_tree, "/@itemprop=embedUrl")
-                if embedUrl is None:
-                    return result
-                video['url'] = embedUrl
-                height = self._findMetaContentByXpath(dom_tree, "/@itemprop=height")
-                if height is not None:
-                    video['height'] = height
-                else:
-                    height = 640
-                width = self._findMetaContentByXpath(dom_tree, "/@itemprop=width")
-                if width is not None:
-                    video['width'] = width
-                else:
-                    width = 391
+        else: # there is no og tag, since someday, vimeo didn't support opengraph tags
+            video = {}
+            embedUrl = self._findMetaContentByXpath(dom_tree, "/@itemprop=embedUrl")
+            if embedUrl is None:
+                return result
+            video['url'] = embedUrl
+            height = self._findMetaContentByXpath(dom_tree, "/@itemprop=height")
+            if height is not None:
+                video['height'] = height
+            else:
+                height = 640
+            width = self._findMetaContentByXpath(dom_tree, "/@itemprop=width")
+            if width is not None:
+                video['width'] = width
+            else:
+                width = 391
 
-                thumb = self._findMetaContentByXpath(dom_tree, "/@itemprop=image")
-                if thumb is not None:
-                    image = {}
-                    image['url'] = thumb
-                    image['height'] = height
-                    image['width'] = width
-                    result['images'].append(image)
+            thumb = self._findMetaContentByXpath(dom_tree, "/@itemprop=image")
+            if thumb is not None:
+                image = {}
+                image['url'] = thumb
+                image['height'] = height
+                image['width'] = width
+                result['images'].append(image)
 
-                result['videos'].append(video)
-                embed = '<p><iframe src="{0}" frameborder="0" width="{1}" height="{2}" webkitAllowFullScreen mozallowfulllscreen allowFullScreen></iframe></p>'.format(embedUrl, width, height)
-                result['content'] = '{0}{1}'.format(embed, desc)
-                    
+            result['videos'].append(video)
+            embed = '<p><iframe src="{0}" frameborder="0" width="{1}" height="{2}" webkitAllowFullScreen mozallowfulllscreen allowFullScreen></iframe></p>'.format(embedUrl, width, height)
+            result['content'] = '{0}{1}'.format(embed, desc)
+                
         return result
             
