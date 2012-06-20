@@ -13,7 +13,7 @@ class Wikipedia(object):
         for n in children:
             if n.tag == 'p':
                 br = lxml.html.Element('br')
-                n.getparent().append(br)
+                n.append(br)
                 n.drop_tag()
         for n in children:
             self._convert_p(n)
