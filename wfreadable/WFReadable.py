@@ -59,7 +59,12 @@ class WFReadable(object):
     def fetch_page(self, url):
         jar = cookielib.CookieJar()
         opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(jar))
-        opener.addheaders = [('User-agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_4) AppleWebKit/536.5 (KHTML, like Gecko) Chrome/19.0.1084.52 Safari/536.5')]
+
+        # t.co will recognize user-agent and use javascript redirection instead of http 301 for normal browser
+        # this is described in https://dev.twitter.com/issues/298
+        # but sadly, we need to handle this since we are not able to handle js redirect
+        if not re.match(".*t\.co/.+", url):
+            opener.addheaders = [('User-agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_4) AppleWebKit/536.5 (KHTML, like Gecko) Chrome/19.0.1084.52 Safari/536.5')]
    #     opener.addheaders = [('User-agent', "Mozilla/5.0 (iPhone; U; CPU like Mac OS X; en) AppleWebKit/420+ (KHTML, like Gecko) Version/3.0 Mobile/1A543 Safari/419.3")]
         url = self.url_preprocessing(url)
         request = urllib2.Request(url.encode('utf-8'))
