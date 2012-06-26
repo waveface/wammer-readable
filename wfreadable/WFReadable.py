@@ -6,6 +6,7 @@ import SiteParser
 import re
 from WebParser import *
 import traceback
+from urlparse import urlparse
 
 class PageFetchError(Exception):
     def __init__(self, trace=None):
