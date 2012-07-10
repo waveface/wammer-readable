@@ -1,4 +1,5 @@
 import lxml.html
+from lxml.html.clean import Cleaner
 import opengraph
 import os
 from urlparse import urlparse
@@ -26,7 +27,7 @@ class WebParser(object):
         if not pattern.match(tag_url):
             if tag_url.startswith("//"):
                 return "http:{0}".format(tag_url)
-            elif tag_url[0] == '/':
+            elif len(tag_url) > 0 and tag_url[0] == '/':
                 return "{0}{1}".format(url_base,  tag_url)
             else:
                 return "{0}{1}/{2}".format(url_base,  uri_path,  tag_url)
@@ -34,6 +35,10 @@ class WebParser(object):
 
     def normalize(self):
         tree = lxml.html.fromstring(self.html)
+        # drop noscript tags
+        noscript = tree.xpath("//noscript | // NOSCRIPT")
+        for ns in noscript:
+            ns.drop_tree()
         tree.make_links_absolute(self.url, True)
 
         bases = tree.xpath("//base | //BASE")
@@ -64,12 +69,6 @@ class WebParser(object):
         result['images'] = []
         result['title'] = ''
         
-        p = urlparse(self.url)
-        if p:
-            result['provider_display'] = p.netloc.lower()
-        else:
-            result['provider_display'] = self.url
-
         og = opengraph.OpenGraph()
         og.parser(self.html)
 
@@ -87,8 +86,10 @@ class WebParser(object):
 
             video = {}
             video['url'] = og['video']
-            video['height'] = og['video:height']
-            video['width'] = og['video:width']
+            if 'video:height' in og:
+                video['height'] = og['video:height']
+            if 'video:width' in og:
+                video['width'] = og['video:width']
 
             result['videos'].append(video)
         if 'type' in og:
@@ -101,6 +102,12 @@ class WebParser(object):
             if 'image:width' in og:
                 img['width'] = og['image:width']
             result['images'].append(img)
+
+        p = urlparse(result['url'])
+        if p:
+            result['provider_display'] = p.netloc.lower()
+        else:
+            result['provider_display'] = result['url']
                 
         if result['title'] == '':
             tags = self.dom_tree.xpath('//title | //TITLE')
@@ -126,11 +133,28 @@ class WebParser(object):
             if name == 'keywords':
                 result['keywords'] = t.get('content')
 
-#        imgs = tree.xpath("//img | //IMG")
-#        for img in imgs:
-#            src = img.get('src')
-#            if src is not None:
-#                result['images'].append({'url': self.fix_relative_url(result['url'], src) })
+        imgs = self.dom_tree.xpath("//img | //IMG")
+        for img in imgs:
+            width = img.get('width')
+            height = img.get('height')
+            if width is None and height is None:
+                continue
+            try:
+                if width is not None: 
+                    width = int(filter(lambda x:x.isdigit(), width))
+                    if width < 100:
+                        continue
+                if height is not None:
+                    height = int(filter(lambda x:x.isdigit(), height))
+                    if height < 100:
+                        continue
+            except:
+                continue
+            src = img.get('src')
+            if src is not None:
+                tmp = {'url': self.fix_relative_url(self.base_url or result['url'], src)}
+                if tmp not in result['images']:
+                    result['images'].append(tmp)
 
         links = self.dom_tree.xpath("//link | //LINK")
         for l in links:
@@ -145,7 +169,9 @@ class WebParser(object):
             elif rel == 'image_src':
                 href = l.get('href')
                 if href is not None:
-                    result['images'].append({'url': self.fix_relative_url(self.base_url or result['url'], href) })
+                    img = {'url': self.fix_relative_url(self.base_url or result['url'], href)}
+                    if img not in result['images']:
+                        result['images'].append(img)
 
         return result
 

@@ -1,12 +1,12 @@
 import sys
 import os
-import urllib
+import urllib2
+import cookielib
 import SiteParser
 import re
-from urllib import URLopener
-from urllib import FancyURLopener
 from WebParser import *
 import traceback
+from urlparse import urlparse
 
 class PageFetchError(Exception):
     def __init__(self, trace=None):
@@ -51,26 +51,73 @@ class WFReadable(object):
         resulting_list.extend (x for x in array2 if x not in resulting_list)
         return resulting_list
 
+    def url_preprocessing(self, url):
+        if (re.match(".*blogspot.com.*", url, flags=re.IGNORECASE)) or (re.match(".*blogger.com.*", url, flags=re.IGNORECASE)) or (re.match(".*examiner.com.*", url, flags=re.IGNORECASE)):
+            if url.find('m=1') < 0:
+                return unicode("{0}?m=1".format(url))
+        return unicode(url)
+
     def fetch_page(self, url):
-        class MyOpener(FancyURLopener):
-            version = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_7) AppleWebKit/534.27+ (KHTML, like Gecko) Version/5.0.4 Safari/533.20.2"
-        myopener = MyOpener()
-        url = unicode(url)
-        page = myopener.open(url.encode('utf-8'))
+        jar = cookielib.CookieJar()
+        opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(jar))
+
+        # t.co will recognize user-agent and use javascript redirection instead of http 301 for normal browser
+        # this is described in https://dev.twitter.com/issues/298
+        # but sadly, we need to handle this since we are not able to handle js redirect
+        if not re.match(".*t\.co/.+", url):
+            opener.addheaders = [('User-agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_4) AppleWebKit/536.5 (KHTML, like Gecko) Chrome/19.0.1084.52 Safari/536.5')]
+   #     opener.addheaders = [('User-agent', "Mozilla/5.0 (iPhone; U; CPU like Mac OS X; en) AppleWebKit/420+ (KHTML, like Gecko) Version/3.0 Mobile/1A543 Safari/419.3")]
+        url = self.url_preprocessing(url)
+        request = urllib2.Request(url.encode('utf-8'))
+        
+        page = opener.open(request)
         if page.getcode() == 200:
+            text = False
+            result = {}
+            result['type'] = 'html'
+
+            # fix the url if we are redirected
+            self.url = urllib2.quote(page.geturl(), safe='~@#$&()*!+=:;,.?/\'')
+
             ctype = page.headers['content-type']
             if re.match("image/.+", ctype, flags=re.I):
-                raise ImagePageURL
+                result['type'] = 'image'
+                result['content'] = '<img src="{0}"/>'.format(url)
+                return result
+
+            if re.match("text/plain", ctype, flags=re.I):
+                result['type'] = 'text'
+                text = True
             content = page.read()
-            charset = page.headers.getparam('charset')
-            if charset is None:
+
+            if ('Content-Encoding' in page.headers.keys() and page.headers['Content-Encoding'] == 'gzip') or \
+               ('content-encoding' in page.headers.keys() and page.headers['content-encoding'] == 'gzip'):
+                # handle gzip response
+                import gzip
+                import cStringIO
+                gz = gzip.GzipFile(fileobj=cStringIO.StringIO(content), mode='rb')
+                content = gz.read()
+                gz.close()  
+
+            charset = None
+            if 'charset' in page.headers:
+                charset = page.headers['charset']
+            checkCharset = re.search("charset=\"?(.+)\"?$", ctype)
+            if checkCharset is not None:
+                charset = checkCharset.group(1)
+            if text is False and charset is None:
                 import BeautifulSoup
                 soup = BeautifulSoup.BeautifulSoup(content)
                 charset = soup.originalEncoding
+
             try:
-                return content.decode(charset)
+                if charset is None:
+                    result['content'] = content
+                else:
+                    result['content'] = content.decode(charset)
             except UnicodeDecodeError:
-                return content
+                result['content'] = content
+            return result
         else:
             return None
 
@@ -87,6 +134,8 @@ class WFReadable(object):
         words = text.split(" ")
         wc = 0
         for w in words:
+            if w == '': 
+                continue
             l = len(w)
             if l > 12:
                 if wc + l > wordno:
@@ -106,15 +155,23 @@ class WFReadable(object):
     def extract_content(self):
         if self.html is None:
             try:
-                self.html = self.fetch_page(self.url)
+                dw = self.fetch_page(self.url)
+                self.html = dw['content']
                 if self.html == None:
                     return None
+
+                if dw['type'] == 'image':
+                    result = {}
+                    result['content'] = '<img src="{0}"/>'.format(self.url)
+                    return result
+
+                if dw['type'] == 'text':
+                    result = {}
+                    result['content'] = dw['content']
+                    return result
+
             except IOError:
                 raise PageFetchError
-            except ImagePageURL:
-                result = {}
-                result['content'] = '<img src="{0}"/>'.format(self.url)
-                return result
 
         if self.dom_tree is None:
             wp = WebParser(self.html, self.url)
@@ -147,26 +204,40 @@ class WFReadable(object):
     def parse(self):
         if self.html is None:
             try:
-                self.html = self.fetch_page(self.url)
+                dw = self.fetch_page(self.url)
+                self.html = dw['content']
                 if self.html == None:
                     return None
+
+                if dw['type'] == 'image':
+                    result = {}
+                    result['images'] = []
+                    result['images'].append({'url': self.url})
+                    p = urlparse(self.url)
+                    if 'netloc' in p:
+                        result['provider_display'] = p.netloc.lower()
+                    else:
+                        result['provider_display'] = ''
+                    result['url'] = self.url
+                    result['type'] = 'image'
+                    result['description'] = ''
+                    result['content'] = dw['content']
+                    result['title'] = ''
+                    return result
+
+                if dw['type'] == 'text':
+                    result = {}
+                    result['images'] = []
+                    result['url'] = self.url
+                    result['type'] = 'article'
+                    content = dw['content'].strip()
+                    result['description'] = self.summarize(content, 75)
+                    result['content'] = content
+                    result['title'] = self.summarize(content, 10)
+                    return result
+                    
             except IOError:
                 raise PageFetchError
-            except ImagePageURL:
-                result = {}
-                result['images'] = []
-                result['images'].append({'url': self.url})
-                p = urlparse(self.url)
-                if 'netloc' in p:
-                    result['provider_display'] = p.netloc.lower()
-                else:
-                    result['provider_display'] = ''
-                result['url'] = self.url
-                result['type'] = 'image'
-                result['description'] = ''
-                result['content'] = '<img src="{0}"/>'.format(self.url)
-                result['title'] = ''
-                return result
 
         result = {}
         try:
@@ -190,6 +261,11 @@ class WFReadable(object):
 
             if 'images' in t:
                 result['images'] = self.merge_url_array(result['images'], t['images'])
+            if 'videos' in t:
+                if 'videos' in result:
+                    result['videos'] = self.merge_url_array(result['videos'], t['videos'])
+                else:
+                    result['videos'] = t['videos']
 
         return result
 

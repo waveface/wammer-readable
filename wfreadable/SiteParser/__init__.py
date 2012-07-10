@@ -4,34 +4,58 @@ import vimeo
 import generic_web
 import boston_big_pictures
 import techcrunch
+import ted
+import slashdot
+import bbc_news
+import wikipedia
 
 Verbose=False
 
 class Sites(object):
     SITE_MAP = [
         {
-            'regex': '((http|https)://)?www.youtube.com(/)?.*',
+            'regex': '((http|https)://)?www\.youtube\.com(/)?.*',
             'handler': youtube.YouTube(verbose=Verbose)
         },
 
         {
-            'regex': '((http|https)://)?(www.)?vimeo.com(/)?.*',
+            'regex': '((http|https)://)?(www\.)?vimeo\.com(/)?.*',
             'handler': vimeo.Vimeo(verbose=Verbose)
         },
 
-#        {
-#            'regex': '((http|https)://)?[a-zA-Z]+.wikipedia.org(/)?.*',
-#            'handler': wikipedia.Wikipedia(verbose=Verbose)
-#        },
+        {
+            'regex': '((http|https)://)?[a-zA-Z]+.wikipedia.org(/)?.*',
+            'handler': wikipedia.Wikipedia(verbose=Verbose)
+        },
 
         {
-            'regex': '((http|https)://)?www.boston.com/bigpicture/.*',
+            'regex': '((http|https)://)?www\.boston\.com/bigpicture/.*',
             'handler': boston_big_pictures.BigPicture(verbose=Verbose)
         },
 
         {
-            'regex': '((http|https)://)?techcrunch.com/.*',
+            'regex': '((http|https)://)?.+slashdot\.org/.*',
+            'handler': slashdot.Slashdot(verbose=Verbose)
+        },
+
+        {
+            'regex': '((http|https)://)?techcrunch\.com/.*',
             'handler': techcrunch.Techcrunch(verbose=Verbose)
+        },
+
+        {
+            'regex': '((http|https)://)?www\.ted\.com/.*',
+            'handler': ted.TedTV(verbose=Verbose)
+        },
+
+        {
+            'regex': '((http|https)://)?www\.bbc\.co\.uk/.*',
+            'handler': bbc_news.BBCNews(verbose=Verbose)
+        },
+
+        {
+            'regex': '((http|https)://)?www\.bbc\.com/.*',
+            'handler': bbc_news.BBCNews(verbose=Verbose)
         },
         
         {
