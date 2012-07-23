@@ -77,8 +77,8 @@ class WebParser(object):
             result['description'] = og['description']
         if 'title' in og:
             result['title'] = og['title'].strip()
-        if 'url' in og:
-            result['url'] = og['url']   
+        #if 'url' in og:
+        #    result['url'] = og['url']   
         if 'provider_name' in og:
             result['site_name'] = og['site_name']
         if 'video' in og:
