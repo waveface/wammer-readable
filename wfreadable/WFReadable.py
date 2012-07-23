@@ -51,6 +51,16 @@ class WFReadable(object):
         resulting_list.extend (x for x in array2 if x not in resulting_list)
         return resulting_list
 
+    def need_additional_ua(self, url):
+        # t.co will recognize user-agent and use javascript redirection instead of http 301 for normal browser
+        # this is described in https://dev.twitter.com/issues/298
+        # but sadly, we need to handle this since we are not able to handle js redirect
+        if re.match(".*t\.co/.+", url):
+            return False
+        if re.match(".*gizmodo\.com/.+", url):
+            return False
+        return True
+
     def url_preprocessing(self, url):
         if (re.match(".*blogspot.com.*", url, flags=re.IGNORECASE)) or (re.match(".*blogger.com.*", url, flags=re.IGNORECASE)) or (re.match(".*examiner.com.*", url, flags=re.IGNORECASE)):
             if url.find('m=1') < 0:
@@ -61,10 +71,7 @@ class WFReadable(object):
         jar = cookielib.CookieJar()
         opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(jar))
 
-        # t.co will recognize user-agent and use javascript redirection instead of http 301 for normal browser
-        # this is described in https://dev.twitter.com/issues/298
-        # but sadly, we need to handle this since we are not able to handle js redirect
-        if not re.match(".*t\.co/.+", url):
+       if self.need_additional_ua(url):
             opener.addheaders = [('User-agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_4) AppleWebKit/536.5 (KHTML, like Gecko) Chrome/19.0.1084.52 Safari/536.5')]
    #     opener.addheaders = [('User-agent', "Mozilla/5.0 (iPhone; U; CPU like Mac OS X; en) AppleWebKit/420+ (KHTML, like Gecko) Version/3.0 Mobile/1A543 Safari/419.3")]
         url = self.url_preprocessing(url)
