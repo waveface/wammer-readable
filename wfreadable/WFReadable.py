@@ -2,7 +2,6 @@ import sys
 import os
 import urllib2
 import cookielib
-import SiteParser
 import re
 from WebParser import *
 import traceback
@@ -184,6 +183,7 @@ class WFReadable(object):
             wp = WebParser(self.html, self.url)
             (self.dom_tree, self.html) = wp.normalize()
 
+        import SiteParser
         try:
             result = {}
             site = SiteParser.Sites(self.url)
@@ -276,3 +276,131 @@ class WFReadable(object):
 
         return result
 
+class WFReadableV2(object):
+    def __init__(self, url, html=None):
+        if (re.match("http(s)?://.+", url, flags=re.IGNORECASE)) is None:
+            url = "http://{0}".format(url)
+
+        self.html = html
+        self.dom_tree = None
+        self.url = url
+
+    def need_additional_ua(self, url):
+        # t.co will recognize user-agent and use javascript redirection instead of http 301 for normal browser
+        # this is described in https://dev.twitter.com/issues/298
+        # but sadly, we need to handle this since we are not able to handle js redirect
+        if re.match(".*t\.co/.+", url):
+            return False
+        if re.match(".*gizmodo\.com/.+", url):
+            return False
+        return True
+
+    def url_preprocessing(self, url):
+        if (re.match(".*blogspot.com.*", url, flags=re.IGNORECASE)) or (re.match(".*blogger.com.*", url, flags=re.IGNORECASE)) or (re.match(".*examiner.com.*", url, flags=re.IGNORECASE)):
+            if url.find('m=1') < 0:
+                return unicode("{0}?m=1".format(url))
+        return unicode(url)
+
+    def fetch_page(self, url):
+        jar = cookielib.CookieJar()
+        opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(jar))
+
+        if self.need_additional_ua(url):
+            opener.addheaders = [('User-agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_4) AppleWebKit/536.5 (KHTML, like Gecko) Chrome/19.0.1084.52 Safari/536.5')]
+   #     opener.addheaders = [('User-agent', "Mozilla/5.0 (iPhone; U; CPU like Mac OS X; en) AppleWebKit/420+ (KHTML, like Gecko) Version/3.0 Mobile/1A543 Safari/419.3")]
+        url = self.url_preprocessing(url)
+        request = urllib2.Request(url.encode('utf-8'))
+        
+        page = opener.open(request)
+        if page.getcode() == 200:
+            text = False
+            result = {}
+            result['type'] = 'html'
+
+            # fix the url if we are redirected
+            self.url = urllib2.quote(page.geturl(), safe='~@#$&()*!+=:;,.?/\'')
+
+            ctype = page.headers['content-type']
+            if re.match("image/.+", ctype, flags=re.I):
+                result['type'] = 'image'
+                result['content'] = '<img src="{0}"/>'.format(url)
+                return result
+
+            if re.match("text/plain", ctype, flags=re.I):
+                result['type'] = 'text'
+                text = True
+            content = page.read()
+
+            if ('Content-Encoding' in page.headers.keys() and page.headers['Content-Encoding'] == 'gzip') or \
+               ('content-encoding' in page.headers.keys() and page.headers['content-encoding'] == 'gzip'):
+                # handle gzip response
+                import gzip
+                import cStringIO
+                gz = gzip.GzipFile(fileobj=cStringIO.StringIO(content), mode='rb')
+                content = gz.read()
+                gz.close()  
+
+            charset = None
+            if 'charset' in page.headers:
+                charset = page.headers['charset']
+            checkCharset = re.search("charset=\"?(.+)\"?$", ctype)
+            if checkCharset is not None:
+                charset = checkCharset.group(1)
+            if text is False and charset is None:
+                import BeautifulSoup
+                soup = BeautifulSoup.BeautifulSoup(content)
+                charset = soup.originalEncoding
+
+            try:
+                if charset is None:
+                    result['content'] = content
+                else:
+                    result['content'] = content.decode(charset)
+            except UnicodeDecodeError:
+                result['content'] = content
+            return result
+        else:
+            return None
+
+    def parse(self):
+        if self.html is None:
+            try:
+                dw = self.fetch_page(self.url)
+                self.html = dw['content']
+                if self.html == None:
+                    return None
+
+                if dw['type'] == 'image':
+                    result = {
+                        'images': [{'url': self.url}],
+                        'url': self.url,
+                        'type': 'image',
+                        'title': '',
+                    }
+                    return result
+
+                if dw['type'] == 'text':
+                    result = {
+                        'images': [],
+                        'url': self.url,
+                        'type': 'article',
+                        'title': '',
+                    }
+                    return result
+                    
+            except IOError:
+                raise PageFetchError
+
+        result = {}
+        try:
+            wp = WebParser(self.html, self.url)
+            (self.dom_tree, self.html) = wp.normalize()
+            result = wp.extractV2()
+        except Exception, e:
+            stack = traceback.format_stack(sys.exc_info()[2].tb_frame)
+            ss = "".join(stack)
+            tb = traceback.format_tb(sys.exc_info()[2])
+            stb = "".join(tb)
+            raise WebParseError("{0}\n{1}\n{2}".format(stb, ss, e))
+
+        return result

@@ -175,3 +175,81 @@ class WebParser(object):
 
         return result
 
+    def extractV2(self):
+        result = {}
+
+        if (self.dom_tree is None):
+            self.normalize()
+
+        result['url'] = self.url
+        result['type'] = 'website'
+        result['images'] = []
+        result['title'] = ''
+        
+        og = opengraph.OpenGraph()
+        og.parser(self.html)
+
+        # opengraph parsing
+        if 'title' in og:
+            result['title'] = og['title'].strip()
+        if 'type' in og:
+            result['type'] = og['type']
+        if 'image' in og:
+            img = {}
+            img['url'] = self.fix_relative_url(self.base_url or self.url, og['image']) 
+            #if 'image:height' in og:
+            #    img['height'] = og['image:height']
+            #if 'image:width' in og:
+            #    img['width'] = og['image:width']
+            result['images'].append(img)
+
+        if result['title'] == '':
+            tags = self.dom_tree.xpath('//title | //TITLE')
+            for t in tags:
+                result['title'] = t.text.strip()
+                break
+
+        # FIXME: this is a workaround to fill-in empty title with URL
+        if result['title'] == '':
+            result['title'] = self.url
+
+        imgs = self.dom_tree.xpath("//img | //IMG")
+        for img in imgs:
+            # Comment images size checking, remove it if need further
+            """
+            width = img.get('width')
+            height = img.get('height')
+            if width is None and height is None:
+                continue
+            try:
+                if width is not None: 
+                    width = int(filter(lambda x:x.isdigit(), width))
+                    if width < 100:
+                        continue
+                if height is not None:
+                    height = int(filter(lambda x:x.isdigit(), height))
+                    if height < 100:
+                        continue
+            except:
+                continue
+            """
+            src = img.get('src')
+            if src is not None:
+                tmp = {'url': self.fix_relative_url(self.base_url or result['url'], src)}
+                if tmp not in result['images']:
+                    result['images'].append(tmp)
+
+        links = self.dom_tree.xpath("//link | //LINK")
+        for l in links:
+            rel = l.get('rel')
+            if rel is None:
+                continue
+            rel = rel.lower()
+            if rel == 'image_src':
+                href = l.get('href')
+                if href is not None:
+                    img = {'url': self.fix_relative_url(self.base_url or result['url'], href)}
+                    if img not in result['images']:
+                        result['images'].append(img)
+
+        return result
