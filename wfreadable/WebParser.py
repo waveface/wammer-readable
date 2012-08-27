@@ -58,7 +58,7 @@ class WebParser(object):
             self.html = lxml.html.tostring(self.dom_tree)
         except lxml.etree.SerialisationError:
             # Failover case to use utf8 as encoding.
-            self.html = lxml.html.tostring(self.dom_tree, encoding='utf8')
+            self.html = lxml.html.tostring(self.dom_tree, encoding='utf-8')
 
         return (self.dom_tree, self.html)
 
