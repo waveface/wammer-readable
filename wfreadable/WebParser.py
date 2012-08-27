@@ -54,7 +54,11 @@ class WebParser(object):
                 img.set('src', self.fix_relative_url(self.base_url or self.url, src))
 
         self.dom_tree = tree
-        self.html = lxml.html.tostring(self.dom_tree)
+        try:
+            self.html = lxml.html.tostring(self.dom_tree)
+        except lxml.etree.SerialisationError:
+            # Failover case to use utf8 as encoding.
+            self.html = lxml.html.tostring(self.dom_tree, encoding='utf8')
 
         return (self.dom_tree, self.html)
 
