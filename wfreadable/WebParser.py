@@ -4,6 +4,7 @@ import opengraph
 import os
 from urlparse import urlparse
 import re
+import httplib2
 
 class WebParser(object):
     def __init__(self, html=None, url=None):
@@ -32,6 +33,16 @@ class WebParser(object):
             else:
                 return "{0}{1}/{2}".format(url_base,  uri_path,  tag_url)
         return tag_url
+
+    def _getFaviconAtRoot(self, scheme, netloc):
+        faviconUrl = '%s://%s/favicon.ico' % (scheme, netloc)
+        method = 'HEAD'
+
+        resp, content = httplib2.Http().request(faviconUrl, method)
+        if resp.status == 200:
+            return faviconUrl
+        else:
+            return None
 
     def normalize(self):
         tree = lxml.html.fromstring(self.html)
@@ -123,6 +134,11 @@ class WebParser(object):
         if result['title'] == '':
             result['title'] = self.url
 
+        if p:
+            favicon = self._getFaviconAtRoot(p.scheme, p.netloc)
+            if favicon:
+                result['favicon_url'] = favicon
+
         tags = self.dom_tree.xpath('//meta | //META')
         for t in tags:
             name = t.get('name')
@@ -166,9 +182,9 @@ class WebParser(object):
             if rel is None:
                 continue
             rel = rel.lower()
-            if rel == 'shortcut icon':
+            if re.match('^(shortcut|icon|shortcut icon)$', rel):
                 href = l.get('href')
-                if href is not None:
+                if href is not None and 'favicon_url' not in result:
                     result['favicon_url'] = self.fix_relative_url(self.base_url or result['url'], href)
             elif rel == 'image_src':
                 href = l.get('href')
