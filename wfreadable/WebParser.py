@@ -134,11 +134,6 @@ class WebParser(object):
         if result['title'] == '':
             result['title'] = self.url
 
-        if p:
-            favicon = self._getFaviconAtRoot(p.scheme, p.netloc)
-            if favicon:
-                result['favicon_url'] = favicon
-
         tags = self.dom_tree.xpath('//meta | //META')
         for t in tags:
             name = t.get('name')
@@ -184,7 +179,7 @@ class WebParser(object):
             rel = rel.lower()
             if re.match('^(shortcut|icon|shortcut icon)$', rel):
                 href = l.get('href')
-                if href is not None and 'favicon_url' not in result:
+                if href is not None:
                     result['favicon_url'] = self.fix_relative_url(self.base_url or result['url'], href)
             elif rel == 'image_src':
                 href = l.get('href')
@@ -192,6 +187,11 @@ class WebParser(object):
                     img = {'url': self.fix_relative_url(self.base_url or result['url'], href)}
                     if img not in result['images']:
                         result['images'].append(img)
+
+        if 'favicon_url' not in result and p:
+            favicon = self._getFaviconAtRoot(p.scheme, p.netloc)
+            if favicon:
+                result['favicon_url'] = favicon
 
         return result
 
