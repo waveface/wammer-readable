@@ -179,7 +179,7 @@ class WebParser(object):
             rel = rel.lower()
             if re.match('^(shortcut|icon|shortcut icon)$', rel):
                 href = l.get('href')
-                if href is not None:
+                if href is not None and href.lower().startswith('http'):
                     result['favicon_url'] = self.fix_relative_url(self.base_url or result['url'], href)
             elif rel == 'image_src':
                 href = l.get('href')
