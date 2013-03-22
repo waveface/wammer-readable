@@ -121,7 +121,7 @@ class WFReadable(object):
                     result['content'] = content
                 else:
                     result['content'] = content.decode(charset)
-            except UnicodeDecodeError:
+            except (UnicodeDecodeError, LookupError):
                 result['content'] = content
             return result
         else:
@@ -356,7 +356,7 @@ class WFReadableV2(object):
                     result['content'] = content
                 else:
                     result['content'] = content.decode(charset)
-            except UnicodeDecodeError:
+            except (UnicodeDecodeError, LookupError):
                 result['content'] = content
             return result
         else:
